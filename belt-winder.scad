@@ -10,6 +10,9 @@ rollerWallDistance = 1;
 m10HexNutRadiusAcrossCorders = 18.48;
 m10HexNutHeadHeight = 6.63;
 
+ballBearingHeight=7;
+ballBearingDiameter=22;
+
 beltHeight = 1; // How thick the belt is
 beltLayers = 15; // Amount of layers if the belt is rolled up, could be computed
 
@@ -52,11 +55,14 @@ module caseCorners(d, height, play=0) {
     }
 }
 
-module caseBody(d, height) {
-    caseCorners(d-1, height);
+module caseBody(d, innerHeight) {
+    caseWallThickness = 7;
+    caseHeight = caseWallThickness + innerHeight;
+
+    caseCorners(d-1, caseHeight);
     difference() {
-        hull() { caseCorners(d, height); }
-        translate([0, 0, wallWhickness]) hull() { caseCorners(d-wallWhickness, height); }
+        hull() { caseCorners(d, caseHeight); }
+        translate([0, 0, caseWallThickness]) hull() { caseCorners(d-wallWhickness, caseHeight); }
     }
 }
 
@@ -103,7 +109,7 @@ module caseScrewHoles(d) {
 }
 
 module case(d) {
-    height = beltRollerWidth+wallWhickness+2*rollerWallDistance;
+    height = beltRollerWidth+2*rollerWallDistance;
 
     difference() {
         translate([0, -0.25*d, 0]) difference() {
@@ -116,19 +122,26 @@ module case(d) {
         }
         
         // Whole for the roll bearing to exit the case
-        translate([0, 0, -5]) cylinder(r=bearingDiameter/2+printPlay, h=10);
+        // translate([0, 0, 3.01]) color("lightgrey") beltRoller();
+        translate([0, 0, -0.01]) color("grey") cylinder(r=ballBearingDiameter/2+printPlay, h=ballBearingHeight+0.02);
+
         
         // Hole for belt exiting the case
-        translate([-2*d, -d, wallWhickness]) rotate([0, 0, 10]) cube([30, beltHeight*5, height-wallWhickness+0.1]);
+        translate([-2*d, -d, 7]) rotate([0, 0, 10]) cube([30, beltHeight*5, height-wallWhickness+0.1]);
     }
     
-    translate([0, 0, wallWhickness-0.01]) bearingPlate();
+    // Ballbearing 
+    color("grey") translate([0, 0, -4]) difference() {
+        union() {
+            cylinder(r1=7, r2=ballBearingDiameter/2+wallWhickness, h=4);
+            translate([0, 0, -0.01]) color("grey") cylinder(r=12/2, h=4);
+        }
+        translate([0, 0, -0.02]) cylinder(r1=7, r2=ballBearingDiameter/2+wallWhickness, h=24);
+    }
+    
+    translate([0, 0, 7-0.01]) bearingPlate();
 }
 
 d = beltRollerDiameter/2 + beltLayers * beltHeight;
 case(d);
-translate([0, 0, 80]) caseLid(d);
-
-translate([0, 0, 3.01]) color("lightgrey") beltRoller();
-
-
+// translate([0, 0, 80]) caseLid(d);
